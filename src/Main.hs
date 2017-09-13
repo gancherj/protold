@@ -11,6 +11,7 @@ import Prot.Lang
 import Prot.Exec
 import Prot.Example
 import Prot.Builder
+import qualified Prot.LangNew as L
 
     
 main = do

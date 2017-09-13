@@ -6,7 +6,7 @@
 {-# language RankNTypes #-}
 {-# language GADTs #-}
 module Prot.Builder where
-import Prot.Lang
+import Prot.LangNew
 import Control.Monad
 import Control.Monad.State
 import Data.Parameterized.Some

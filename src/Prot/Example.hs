@@ -5,7 +5,7 @@
 {-# language UndecidableInstances #-}
 {-# language GADTs #-}
 module Prot.Example where
-import Prot.Lang
+import Prot.LangNew
 import Prot.Exec
 import Data.Dynamic
 import Data.Parameterized.Some
@@ -28,10 +28,10 @@ pong ex_end outc inc = do
 
 prot :: ProtBuilder
 prot = do
-    start <- regChan "start" UnitRep
-    a <- regChan "pingpong" IntRep
-    b <- regChan "pongping" IntRep
-    stop <- regChan "stop" StringRep
+    start <- regChan "start" unitRep
+    a <- regChan "pingpong" intRep
+    b <- regChan "pongping" intRep
+    stop <- regChan "stop" stringRep
     
     regParty (ping start a b) () [Some a]
     regParty (pong stop b a) () [Some stop, Some b]

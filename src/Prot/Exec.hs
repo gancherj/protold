@@ -3,13 +3,15 @@
 {-# language FlexibleInstances #-}
 {-# language RankNTypes #-}
 {-# language UndecidableInstances #-}
+{-# language ScopedTypeVariables #-}
 {-# language GADTs #-}
 module Prot.Exec where
 import Data.Parameterized.Some
 import Control.Monad.State
 import qualified Data.Map.Strict as Map
 import Control.Monad.Free
-import Prot.Lang
+import Prot.LangNew
+import Data.Type.Equality
 import Data.Typeable
 import Data.Dynamic
 import System.IO.Unsafe
@@ -55,11 +57,12 @@ checkProt ps =
 runProt :: [Party] -> IO ()
 runProt pi = do
     if not $ checkProt pi then fail "bad pi" else return ()
-    putStrLn $ show $ evalState (runProt' (Some (Msg (Chan "start" UnitRep) ()))) pi where
+    putStrLn $ show $ evalState (runProt' (Some (Msg (Chan "start" unitRep) ()))) pi where
         runProt' :: Some Msg -> State [Party] String
         runProt' m = do
             case m of
-              Some (Msg (Chan "stop" StringRep) e) -> return e
+              Some (Msg (Chan "stop" r) e) -> case testEquality r stringRep of
+                                                Just Refl -> return e
               _ -> do
                   m' <- stepProt m
                   case m' of

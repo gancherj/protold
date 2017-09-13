@@ -1,34 +1,68 @@
+
 {-# language ExistentialQuantification #-}
 {-# language DeriveFunctor #-}
 {-# language FlexibleInstances #-}
 {-# language UndecidableInstances #-}
 {-# language StandaloneDeriving #-}
 {-# language GADTs #-}
-module Prot.Lang where
+module Prot.LangNew where
 import Data.Parameterized.Some
 import Data.Parameterized.Classes as C
 import Control.Monad.State
 import Control.Monad.Free
 import Data.Dynamic
 import Data.Type.Equality
+import Data.Typeable
 import qualified Data.Set as Set
 
+intRep :: Repr Int
+intRep = SymbolicRepr Symbolic
+
+stringRep :: Repr String
+stringRep = SymbolicRepr Symbolic
+
+unitRep :: Repr ()
+unitRep = EnumerableRepr Enumerable
+
+instance IsEnumerable () where
+    enumerate = [()]
+
+
+class IsEnumerable a where
+    enumerate :: [a]
+
+data Symbolic a where
+    Symbolic :: (Eq a, Show a, Typeable a) => Symbolic a
+
+instance Show (Symbolic a) where
+    show a = case a of
+               b@Symbolic -> show (typeOf b)
+
+instance TestEquality Symbolic where
+    testEquality Symbolic Symbolic = eqT
+
+data Enumerable a where
+    Enumerable :: (Eq a, Show a, Typeable a, IsEnumerable a) => Enumerable a
+
+instance Show (Enumerable a) where
+    show a = case a of
+               b@Enumerable -> show (typeOf b)
+
+instance TestEquality Enumerable where
+    testEquality Enumerable Enumerable = eqT
 
 data Repr a where
-    IntRep :: Repr Int
-    StringRep :: Repr String
-    BoolRep :: Repr Bool
-    UnitRep :: Repr ()
+    SymbolicRepr :: Symbolic a -> Repr a
+    EnumerableRepr :: Enumerable a -> Repr a
 
 deriving instance Show (Repr tp)
 
 
 instance TestEquality Repr where
-    IntRep `testEquality` IntRep = Just Refl
-    StringRep `testEquality` StringRep = Just Refl
-    BoolRep `testEquality` BoolRep = Just Refl
-    UnitRep `testEquality` UnitRep = Just Refl
+    testEquality (SymbolicRepr a) (SymbolicRepr b) = testEquality a b
+    testEquality (EnumerableRepr a) (EnumerableRepr b) = testEquality a b
     testEquality _ _ = Nothing
+
 
 
 data Chan a = Chan String (Repr a)
