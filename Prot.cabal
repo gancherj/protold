@@ -21,4 +21,5 @@ executable Prot
                        parameterized-utils,
                        mtl,
                        containers,
-                       free
+                       free,
+                       lens

@@ -10,8 +10,9 @@ import Control.Monad.Free
 import Prot.Lang
 import Prot.Exec
 import Prot.Example
+import Prot.Builder
 
     
 main = do
-    runProt startchan [pingP, pongP]
+    runProt $ getProt prot 
     putStrLn "hello world"

@@ -52,10 +52,10 @@ checkProt ps =
     let cs = chanSets ps in
     Set.null $ Set.filter (\c -> countChans cs c > 1) (allChans ps)
 
-runProt :: Chan () -> [Party] -> IO ()
-runProt start pi = do
+runProt :: [Party] -> IO ()
+runProt pi = do
     if not $ checkProt pi then fail "bad pi" else return ()
-    putStrLn $ show $ evalState (runProt' (Some (Msg start ()))) pi where
+    putStrLn $ show $ evalState (runProt' (Some (Msg (Chan "start" UnitRep) ()))) pi where
         runProt' :: Some Msg -> State [Party] String
         runProt' m = do
             case m of

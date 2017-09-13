@@ -8,6 +8,8 @@ module Prot.Example where
 import Prot.Lang
 import Prot.Exec
 import Data.Dynamic
+import Data.Parameterized.Some
+import Prot.Builder
 
 ping :: Chan () -> Chan Int -> Chan Int -> Proc ()
 ping ex_start outc inc = do
@@ -24,14 +26,18 @@ pong ex_end outc inc = do
         else
             output outc (j + 1)
 
-startchan = Chan "start" UnitRep
-pingpong = Chan "pingpong" IntRep
-pongping = Chan "pongping" IntRep
-stop = Chan "stop" StringRep
+prot :: ProtBuilder
+prot = do
+    start <- regChan "start" UnitRep
+    a <- regChan "pingpong" IntRep
+    b <- regChan "pongping" IntRep
+    stop <- regChan "stop" StringRep
+    
+    regParty (ping start a b) () [Some a]
+    regParty (pong stop b a) () [Some stop, Some b]
+    return ()
+    
 
-pingInst = ping startchan pingpong pongping
-pongInst = pong stop pongping pingpong
 
-pingP = procToParty pingInst ()
-pongP = procToParty pongInst ()
+
         

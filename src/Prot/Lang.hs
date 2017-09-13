@@ -64,18 +64,22 @@ pass = return Nothing
 
 data Party = forall s. Party {
     pState :: s, 
-    pActlist :: [Some (Reaction s)]
+    pActlist :: [Some (Reaction s)],
+    pChansIn :: [Some Chan],
+    pChansOut :: [Some Chan]
  }
 
 procToList :: Proc s -> [Some (Reaction s)]
 procToList (Free (OnInput c f k)) = (Some $ Reaction c f) : (procToList k)
 procToList _ = []
 
-procToParty :: Proc s -> s -> Party
-procToParty p s = Party s (procToList p) 
+procToParty :: Proc s -> s -> [Some Chan] -> Party
+procToParty p s outs = 
+    Party s (procToList p) 
+        (map (\pr -> case pr of Some (Reaction ch _) -> Some ch) (procToList p)) outs
 
 canReceive :: Party -> Some Msg -> Bool
-canReceive (Party s as) (Some m) =
+canReceive (Party s as a b) (Some m) =
     case findReaction as m of
       Just _ -> True
       Nothing -> False
@@ -92,15 +96,15 @@ findReaction (r:rs) m =
 
 
 react :: Party -> Some Msg -> (Party, Action)
-react (Party s as) (Some msg) =
+react (Party s as a b) (Some msg) =
     case (findReaction as msg, msg) of
       (Just (Reaction _ fn), Msg _ m)  ->
           let (a', s') = runState (fn m) s in
-          (Party s' as, a')
+          (Party s' as a b, a')
 
 
 getChanLabels :: Party -> Set.Set String
-getChanLabels (Party s as) = go as where
+getChanLabels (Party s as _ _) = go as where
     go [] = Set.empty
     go (a : as) = 
         case a of
