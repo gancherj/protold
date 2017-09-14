@@ -5,7 +5,7 @@
 {-# language UndecidableInstances #-}
 {-# language GADTs #-}
 module Prot.Example where
-import Prot.LangNew
+import Prot.Lang
 import Prot.Exec
 import Data.Dynamic
 import Data.Parameterized.Some

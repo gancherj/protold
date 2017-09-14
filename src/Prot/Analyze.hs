@@ -10,5 +10,3 @@ import Prot.Exec
 import Data.Parameterized.Some
 import Prot.Builder
 
-class Enumerable a where
-    enumerate :: [a]

@@ -10,7 +10,7 @@ import Data.Parameterized.Some
 import Control.Monad.State
 import qualified Data.Map.Strict as Map
 import Control.Monad.Free
-import Prot.LangNew
+import Prot.Lang
 import Data.Type.Equality
 import Data.Typeable
 import Data.Dynamic
