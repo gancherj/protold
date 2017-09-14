@@ -67,6 +67,6 @@ runProt pi = do
                   m' <- stepProt m
                   case m' of
                     Just m' -> runProt' m'
-                    Nothing -> fail "no message produced!"
+                    Nothing -> runProt' (Some (Msg (Chan "start" unitRep) ()))
     
 

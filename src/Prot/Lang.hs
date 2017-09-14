@@ -27,6 +27,20 @@ unitRep = EnumerableRepr Enumerable
 instance IsEnumerable () where
     enumerate = [()]
 
+boolRep :: Repr Bool
+boolRep = EnumerableRepr Enumerable
+
+instance IsEnumerable Bool where
+    enumerate = [False, True]
+
+instance (IsEnumerable a, IsEnumerable b) => IsEnumerable (a,b) where
+    enumerate = [(x,y) | x <- enumerate, y <- enumerate]
+
+instance (IsEnumerable a) => IsEnumerable (Maybe a) where
+    enumerate = Nothing : (map Just enumerate)
+
+instance (IsEnumerable a, IsEnumerable b) => IsEnumerable (Either a b) where
+    enumerate = (map Left enumerate) ++ (map Right enumerate)
 
 class IsEnumerable a where
     enumerate :: [a]
