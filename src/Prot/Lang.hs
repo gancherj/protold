@@ -81,9 +81,37 @@ instance TestEquality Repr where
 
 data Chan a = Chan String (Repr a)
 
+instance TestEquality Chan where
+    testEquality c c' =
+        case (c,c') of
+          (Chan c repr@(EnumerableRepr Enumerable), Chan c' repr'@(EnumerableRepr Enumerable)) ->
+              case (testEquality repr repr', c == c') of
+                (Just Refl, True) -> Just Refl
+                _ -> Nothing
+          (Chan c repr@(SymbolicRepr Symbolic), Chan c' repr'@(SymbolicRepr Symbolic)) ->
+              case (testEquality repr repr', c == c') of
+                (Just Refl, True) -> Just Refl
+                _ -> Nothing
+          _ -> Nothing
+
 type Action = Maybe (Some Msg)
 data Reaction s a  = Reaction (Chan a) (a -> State s Action)
 data Msg a = Msg (Chan a) a
+
+instance TestEquality Msg where
+    testEquality m m' =
+        case (m,m') of
+          (Msg (Chan c repr@(EnumerableRepr Enumerable)) m, Msg (Chan c' repr'@(EnumerableRepr Enumerable)) m') ->
+                case (testEquality repr repr', c==c') of
+                  (Just Refl, True) ->
+                      if m == m' then Just Refl else Nothing
+                  _ -> Nothing
+          (Msg (Chan c repr@(SymbolicRepr Symbolic)) m, Msg (Chan c' repr'@(SymbolicRepr Symbolic)) m') ->
+                case (testEquality repr repr', c==c') of
+                  (Just Refl, True) ->
+                      if m == m' then Just Refl else Nothing
+                  _ -> Nothing
+          _ -> Nothing
 
 data ProcF s k where
     OnInput :: Chan a -> (a -> State s Action) -> k -> ProcF s k 
@@ -129,6 +157,17 @@ canReceive (Party s as a b) (Some m) =
     case findReaction as m of
       Just _ -> True
       Nothing -> False
+
+chansCanReceive :: [Some Chan] -> Some Msg -> Bool
+chansCanReceive [] _ = False
+chansCanReceive (c:cs) m =
+    case m of
+      Some (Msg c' _) ->
+          case c == (Some c') of
+            True -> True
+            _ -> chansCanReceive cs m
+    
+
 
 findReaction :: [Some (Reaction s)] -> Msg a -> Maybe (Reaction s a)
 findReaction [] _ = Nothing
