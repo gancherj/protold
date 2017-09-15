@@ -13,7 +13,12 @@ import Prot.KVList
 import Control.Monad
 import Control.Monad.State
 
-data SymParty = Honest Party | Adv [Some Chan] [Some Chan] Trace
+-- an adversary is denoted to be an arbitrary party whose random coins are fixed. This means that an adversary is an arbitrary-but-fixed function from traces to messages. No coherency condition is required on this adversary.
+-- 
+-- a trace for a single party is a list of (in message, out message) pairs
+--
+type Trace = KVList (Some Msg) (Some Msg)
+data SymParty = Honest Party | Adv [Some Chan] [Some Chan] (KVList Trace (Some Msg))
 
 -- given all output channels, enumerate what messages I can send
 allActions :: [Some Chan] -> [Some Msg]
@@ -23,8 +28,7 @@ allActions scs = concat $ map
           map (\e -> Some (Msg chan e)) enumerate
       _ -> fail "not enumerable!") scs
 
--- a trace for a single party is a list of (in message, out message) pairs
-type Trace = KVList (Some Msg) (Some Msg)
+
 
 emptyTrace :: Trace
 emptyTrace = kvEmpty
