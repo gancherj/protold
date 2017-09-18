@@ -91,3 +91,19 @@ prot2Sim inSim outSim toAdv fromAdv = do
 
         
 -- how do I program so that the above is painless? "wiring up" adversaries and simulators. I'm imagining a continuation-passing style so that I can pass forward the channels needed for the next stage. It should  be in the above that when I wire up acceptB, I don't need to know in advance who the other party is.
+-- The solution is to have ProtBuilder work iteratively, instead of all at once. ie, right now regParty expects all wiring information at once. instead:
+--
+--  connectIn c p1 
+--  connectOut c p2
+--
+--  means make p1 output on c, and have p2 input on c
+--
+--  by doing so, I can have values of type (say) pb :: Chan a -> Chan b -> ProtBuilder, which takes an input channel on a, output on b, and constructs a subprotocol which uses them. So I can connect a to pb by
+--
+-- c1 <- mkChan
+-- c2 <- mkChan
+-- pb c1 c2
+-- connectOut c1 a
+-- connectIn c2 a
+--
+--
