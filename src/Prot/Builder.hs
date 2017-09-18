@@ -7,6 +7,7 @@
 {-# language GADTs #-}
 module Prot.Builder where
 import Prot.Lang
+import Prot.Analyze
 import Control.Monad
 import Control.Monad.State
 import Data.Parameterized.Some
@@ -31,13 +32,18 @@ regChan s rep = do
     curChans .= Some (Chan s rep):chans
     return (Chan s rep)
 
-regParty :: Proc s -> s -> [Some Chan] -> State BuilderState Party -- third argument is the list of channels it outputs on (only necessary for analysis)
+regParty :: Proc s -> s -> [Some Chan] -> State BuilderState () -- third argument is the list of channels it outputs on (only necessary for analysis)
 regParty proc s outs = do
     parties <- use curParties
     curParties .= (procToParty proc s outs) : parties
-    return (procToParty proc s outs)
+    return ()
 
 
 getProt :: State BuilderState a -> [Party]
 getProt s = _curParties $ execState s (BuilderState [] [])
 
+mkParty :: Proc s -> s -> [Some Chan] -> [Some Chan] -> ProtBuilder
+mkParty p s ins outs = regParty p s outs
+
+unifProt :: [Some Chan] -> [Some Chan] -> ProtBuilder
+unifProt ins outs = mkParty (unifAdversaryProc ins outs) () ins outs

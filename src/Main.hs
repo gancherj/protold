@@ -15,6 +15,6 @@ import Prot.Analyze
 
     
 main = do
-    putStrLn $ show $ runProt $ (prot2 True )
-    putStrLn $ show $ runProt $ (prot2sim False )
+    putStrLn $ show $ runProt $ getProt $ (prot2Real True )
+    putStrLn $ show $ runProt $ getProt $ (prot2Ideal False )
     putStrLn "hello world"
