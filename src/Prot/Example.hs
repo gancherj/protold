@@ -16,18 +16,19 @@ ping ex_start outc inc = do
     onInput ex_start $ \_ -> do
         output outc 0
     onInput inc $ \j -> do
-        output outc (j + 1)
+        i <- choose [1,2]
+        output outc (j + i)
 
 pong :: Chan String -> Chan Int -> Chan Int -> Proc ()
 pong ex_end outc inc = do
     onInput inc $ \j ->
         if j > 10 then
-            output ex_end "hello"
+            output ex_end $ "hello: " ++ (show j)
         else
             output outc (j + 1)
 
-prot :: ProtBuilder
-prot = do
+prot1 :: ProtBuilder
+prot1 = do
     start <- regChan "start" unitRep
     a <- regChan "pingpong" intRep
     b <- regChan "pongping" intRep

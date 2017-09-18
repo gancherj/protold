@@ -41,7 +41,7 @@ rpsWinner Rock Paper = WinR
 rpsWinner Paper Scissors = WinR
 rpsWinner _ _ = Tie
 
-player :: Chan String -> Chan RPSCommand -> Chan RPSCommand -> Chan RPSOutcome -> Proc ()
+honestPlayer :: Chan String -> Chan RPSCommand -> Chan RPSCommand -> Chan RPSOutcome -> Proc ()
 player f2me me2f env_input my_output = do
     onInput env_input $ \play ->
         output me2f play

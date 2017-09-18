@@ -94,8 +94,10 @@ instance TestEquality Chan where
                 _ -> Nothing
           _ -> Nothing
 
+type NondetState s a = StateT s [] a
+
 type Action = Maybe (Some Msg)
-data Reaction s a  = Reaction (Chan a) (a -> State s Action)
+data Reaction s a  = Reaction (Chan a) (a -> NondetState s Action) -- Change: all parties are nondeterministic. By allowing all parties to be nondeterminstic, we may check equivalence of protocols by checking against the "fully nondeterminstic" adversary.
 data Msg a = Msg (Chan a) a
 
 instance TestEquality Msg where
@@ -114,7 +116,7 @@ instance TestEquality Msg where
           _ -> Nothing
 
 data ProcF s k where
-    OnInput :: Chan a -> (a -> State s Action) -> k -> ProcF s k 
+    OnInput :: Chan a -> (a -> NondetState s Action) -> k -> ProcF s k 
     End :: ProcF s k
 
 instance Functor (ProcF s) where
@@ -123,15 +125,20 @@ instance Functor (ProcF s) where
 
 type Proc s = Free (ProcF s) ()
 
-onInput :: Chan a -> (a -> State s Action) -> Proc s
+onInput :: Chan a -> (a -> NondetState s Action) -> Proc s
 onInput chan act = liftF (OnInput chan act ())
 
 endProc :: Proc s
 endProc = liftF End
 
+choose :: [a] -> NondetState s a
+choose as = lift $ as
 
-output :: Chan a -> a -> State s Action
+output :: Chan a -> a -> NondetState s Action
 output chan val = return $ Just $ Some $ Msg chan val
+
+outputMsg :: Some Msg -> NondetState s Action
+outputMsg (Some (Msg chan m)) = output chan m
 
 pass :: State s Action
 pass = return Nothing
@@ -180,12 +187,12 @@ findReaction (r:rs) m =
             _ -> findReaction rs m
 
 
-react :: Party -> Some Msg -> (Party, Action)
+react :: Party -> Some Msg -> [(Party, Action)]
 react (Party s as a b) (Some msg) =
     case (findReaction as msg, msg) of
-      (Just (Reaction _ fn), Msg _ m)  ->
-          let (a', s') = runState (fn m) s in
-          (Party s' as a b, a')
+      (Just (Reaction _ fn), Msg _ m)  -> do
+          (a', s') <- runStateT (fn m) s
+          return (Party s' as a b, a')
 
 
 getChanLabels :: Party -> Set.Set String

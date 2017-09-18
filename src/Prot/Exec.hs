@@ -18,22 +18,22 @@ import System.IO.Unsafe
 import qualified Data.Set as Set
 
 
-runMsg :: [Party] -> Some Msg -> ([Party], Action) 
-runMsg [] m = ([], Nothing)
+runMsg :: [Party] -> Some Msg -> [([Party], Action)]                                 
+runMsg [] m = return ([], Nothing)
 runMsg (p:ps) m = 
     case canReceive p m of
-      True ->
-          let (p', m') = react p m in
-          (p':ps, m')
-      False ->
-          let (ps', m') = runMsg ps m in
-          (p:ps', m')
+      True -> do
+          (p', m') <- react p m 
+          return (p':ps, m')
+      False -> do
+          (ps', m') <- runMsg ps m 
+          return (p:ps', m')
 
 
-stepProt :: Some Msg -> State [Party] Action
+stepProt :: Some Msg -> NondetState [Party] Action
 stepProt m = do
     ps <- get
-    let (ps', m') = runMsg ps m
+    (ps', m') <- lift $ runMsg ps m
     put ps'
     return m'
 
@@ -54,11 +54,11 @@ checkProt ps =
     let cs = chanSets ps in
     Set.null $ Set.filter (\c -> countChans cs c > 1) (allChans ps)
 
-runProt :: [Party] -> IO ()
+runProt :: [Party] -> [String]
 runProt pi = do
     if not $ checkProt pi then fail "bad pi" else return ()
-    putStrLn $ show $ evalState (runProt' (Some (Msg (Chan "start" unitRep) ()))) pi where
-        runProt' :: Some Msg -> State [Party] String
+    evalStateT (runProt' (Some (Msg (Chan "start" unitRep) ()))) pi where
+        runProt' :: Some Msg -> NondetState [Party] String
         runProt' m = do
             case m of
               Some (Msg (Chan "stop" r) e) -> case testEquality r stringRep of
