@@ -32,10 +32,10 @@ regChan s rep = do
     return (Chan s rep)
 
 regParty :: Proc s -> s -> [Some Chan] -> State BuilderState Party -- third argument is the list of channels it outputs on (only necessary for analysis)
-regParty a b c = do
+regParty proc s outs = do
     parties <- use curParties
-    curParties .= (procToParty a b c) : parties
-    return (procToParty a b c)
+    curParties .= (procToParty proc s outs) : parties
+    return (procToParty proc s outs)
 
 
 getProt :: State BuilderState a -> [Party]

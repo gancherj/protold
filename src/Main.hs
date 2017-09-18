@@ -15,6 +15,6 @@ import Prot.Analyze
 
     
 main = do
-    putStrLn $ show $ runProt $ getProt prot 
-    putStrLn $ show $ (enumerate :: [(Bool, ())])
+    putStrLn $ show $ runProt $ (prot2 True )
+    putStrLn $ show $ runProt $ (prot2sim False )
     putStrLn "hello world"

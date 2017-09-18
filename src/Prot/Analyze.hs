@@ -35,7 +35,7 @@ unifAdversary ins outs = procToParty (unifAdversaryProc ins outs) () outs
 identicalProts :: [Some Chan] -> [Some Chan] -> (Party -> [Party]) -> (Party -> [Party]) -> Bool
 identicalProts ins outs p1 p2 = 
     let ua = unifAdversary ins outs in 
-    isPermutation (runProt (p1 ua)) (runProt (p2 ua))
+        (runProt (p1 ua)) == (runProt (p2 ua)) -- nondeterminism must be identical, in order to match branches. This will likely cause complications in the precense of nondeterministic honest parties. I should swith later to a "tagged nondeterminism", where the nondeterministic branches of the adversary are tagged with which branch they took. Then, the condition to check is that for each branch tag, the set of outcomes are permutations of each other.
 
 
 
@@ -48,13 +48,5 @@ allActions scs = concat $ map
       Some chan@(Chan c (EnumerableRepr Enumerable)) ->
           map (\e -> Some (Msg chan e)) enumerate
       _ -> fail "not enumerable!") scs
-
-
-isPermutation :: Eq a => [a] -> [a] -> Bool
-isPermutation [] [] = True
-isPermutation (x:xs) [] = False
-isPermutation [] (y:ys) = False
-isPermutation (x:xs) ys =
-    if x `elem` ys then isPermutation xs (L.delete x ys) else False
 
 
