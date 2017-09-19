@@ -1,4 +1,6 @@
-
+-- Todo: have InputChan and OutputChan, to enforce better typing on the use of channels. Maybe have channels be two way, by having a channel by a pair of input chan & output chan. Then I can write "output c" which means output on the output channel of c
+--
+--
 {-# language ExistentialQuantification #-}
 {-# language DeriveFunctor #-}
 {-# language FlexibleInstances #-}
@@ -10,7 +12,6 @@ import Data.Parameterized.Some
 import Data.Parameterized.Classes as C
 import Control.Monad.State
 import Control.Monad.Free
-import Data.Dynamic
 import Data.Type.Equality
 import Data.Typeable
 import qualified Data.Set as Set

@@ -46,12 +46,12 @@ prot1 = do
 
 
 acceptB :: Bool -> Chan () -> Chan String -> Chan () -> Chan Bool -> ProtBuilder
-acceptB accB startChan endChan outChan inChan = mkParty p () [Some startChan, Some inChan] [Some outChan,Some endChan] where
-    p = do
-        onInput startChan $ \_ -> output outChan ()
+acceptB accB startChan endChan outChan inChan = mkParty () [Some startChan, Some inChan] [Some outChan,Some endChan] $
+    do
+    onInput startChan $ \_ -> output outChan ()
 
-        onInput inChan $ \b ->
-            if b == accB then output endChan "good" else output endChan "bad"
+    onInput inChan $ \b ->
+        if b == accB then output endChan "good" else output endChan "bad"
 
 
 prot2' :: Bool -> (Chan () -> Chan Bool -> ProtBuilder) -> ProtBuilder
@@ -82,10 +82,10 @@ prot2sim simin simout = do
 
 
 prot2Sim :: Chan () -> Chan Bool -> Chan () -> Chan Bool -> ProtBuilder
-prot2Sim inSim outSim toAdv fromAdv = mkParty p () [Some inSim, Some fromAdv] [Some outSim, Some toAdv] where
-    p = do
-        onInput inSim $ \_ -> output toAdv ()
-        onInput fromAdv $ \b -> output outSim (not b)
+prot2Sim inSim outSim toAdv fromAdv = mkParty () [Some inSim, Some fromAdv] [Some outSim, Some toAdv] $
+    do
+    onInput inSim $ \_ -> output toAdv ()
+    onInput fromAdv $ \b -> output outSim (not b)
 
 
         

@@ -8,6 +8,7 @@ module Prot.Analyze where
 import Prot.Lang
 import qualified Prot.Exec as Exec
 import Data.Parameterized.Some
+import Data.Type.Equality
 import Prot.KVList
 import qualified Data.List as L
 import Control.Monad
@@ -19,6 +20,20 @@ import Control.Monad.State
 -- a trace for a single party is a list of (in message, out message) pairs
 --
 --
+
+
+boundedEchoProc :: Int -> [(Some Chan, Some Chan)] -> NondetState Int Action -> Proc Int
+boundedEchoProc i pairs act =
+    forM_ pairs 
+        (\(Some c@(Chan _ repr), Some c'@(Chan _ repr')) -> do
+            onInput c $ \m -> 
+                case testEquality repr repr' of
+                  Just Refl -> do
+                    j <- get
+                    put $ j + 1 
+                    if j > i then act else output c' m
+                  _ -> fail "bad pair for echo!")
+
 
 unifAdversaryProc :: [Some Chan] -> [Some Chan] -> Proc ()
 unifAdversaryProc ins outs = 

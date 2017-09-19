@@ -42,8 +42,14 @@ regParty proc s outs = do
 getProt :: State BuilderState a -> [Party]
 getProt s = _curParties $ execState s (BuilderState [] [])
 
-mkParty :: Proc s -> s -> [Some Chan] -> [Some Chan] -> ProtBuilder
-mkParty p s ins outs = regParty p s outs
+mkParty :: s -> [Some Chan] -> [Some Chan] -> Proc s -> ProtBuilder
+mkParty s ins outs p = regParty p s outs
 
 unifProt :: [Some Chan] -> [Some Chan] -> ProtBuilder
-unifProt ins outs = mkParty (unifAdversaryProc ins outs) () ins outs
+unifProt ins outs = mkParty () ins outs (unifAdversaryProc ins outs)
+
+echoProt :: Int -> [(Some Chan, Some Chan)] -> NondetState Int Action -> ProtBuilder
+echoProt i pairs act = mkParty 0 (map fst pairs) (map snd pairs) (boundedEchoProc i pairs act)
+
+
+

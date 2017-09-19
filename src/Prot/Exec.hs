@@ -55,14 +55,14 @@ checkProt ps =
     let cs = chanSets ps in
     Set.null $ Set.filter (\c -> countChans cs c > 1) (allChans ps)
 
-runProt :: [Party] -> [[String]]
+runProt :: [Party] -> [[Bool]]
 runProt pi = T.partition $ do
     if not $ checkProt pi then fail "bad pi" else return ()
     evalStateT (runProt' (Some (Msg (Chan "start" unitRep) ()))) pi where
-        runProt' :: Some Msg -> NondetState [Party] String
+        runProt' :: Some Msg -> NondetState [Party] Bool
         runProt' m = do
             case m of
-              Some (Msg (Chan "stop" r) e) -> case testEquality r stringRep of
+              Some (Msg (Chan "stop" r) e) -> case testEquality r boolRep of
                                                 Just Refl -> return e
               _ -> do
                   m' <- stepProt m
