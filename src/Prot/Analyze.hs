@@ -39,3 +39,27 @@ allActions scs = concat $ map
       _ -> fail "not enumerable!") scs
 
 
+removeBy :: (a -> Bool) -> [a] -> Either [a] [a]
+removeBy f [] = Right []
+removeBy f (x:xs) = 
+    if f x then Left xs else 
+        case (removeBy f xs) of
+          Left xs' -> Left (x:xs)
+          Right xs' -> Right (x:xs)
+
+isPermutationBy :: (a -> a -> Bool) -> [a] -> [a] -> Bool
+isPermutationBy f [] [] = True
+isPermutationBy f (x:xs) [] = False
+isPermutationBy f [] (y:ys) = False
+isPermutationBy f (x:xs) ys =
+    case removeBy (f x) ys of
+      Left ys' -> 
+          isPermutationBy f xs ys'
+      Right _ -> False
+
+isDoublePerm :: Eq a => [[a]] -> [[a]] -> Bool
+isDoublePerm = isPermutationBy (isPermutationBy (==))
+
+identicalProts :: [Party] -> [Party] -> Bool
+identicalProts a b = isDoublePerm (runProt a) (runProt b) -- TODO is this correct??
+
