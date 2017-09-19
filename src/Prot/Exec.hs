@@ -15,10 +15,11 @@ import Data.Type.Equality
 import Data.Typeable
 import Data.Dynamic
 import System.IO.Unsafe
+import qualified Prot.TNondet as T
 import qualified Data.Set as Set
 
 
-runMsg :: [Party] -> Some Msg -> [([Party], Action)]                                 
+runMsg :: [Party] -> Some Msg -> T.TNondet ([Party], Action)                                 
 runMsg [] m = return ([], Nothing)
 runMsg (p:ps) m = 
     case canReceive p m of
@@ -54,8 +55,8 @@ checkProt ps =
     let cs = chanSets ps in
     Set.null $ Set.filter (\c -> countChans cs c > 1) (allChans ps)
 
-runProt :: [Party] -> [String]
-runProt pi = do
+runProt :: [Party] -> [[String]]
+runProt pi = T.partition $ do
     if not $ checkProt pi then fail "bad pi" else return ()
     evalStateT (runProt' (Some (Msg (Chan "start" unitRep) ()))) pi where
         runProt' :: Some Msg -> NondetState [Party] String
@@ -68,5 +69,6 @@ runProt pi = do
                   case m' of
                     Just m' -> runProt' m'
                     Nothing -> runProt' (Some (Msg (Chan "start" unitRep) ()))
+
     
 

@@ -14,6 +14,7 @@ import Data.Dynamic
 import Data.Type.Equality
 import Data.Typeable
 import qualified Data.Set as Set
+import qualified Prot.TNondet as TN
 
 intRep :: Repr Int
 intRep = SymbolicRepr Symbolic
@@ -94,7 +95,7 @@ instance TestEquality Chan where
                 _ -> Nothing
           _ -> Nothing
 
-type NondetState s a = StateT s [] a
+type NondetState s a = StateT s TN.TNondet a
 
 type Action = Maybe (Some Msg)
 data Reaction s a  = Reaction (Chan a) (a -> NondetState s Action) -- Change: all parties are nondeterministic. By allowing all parties to be nondeterminstic, we may check equivalence of protocols by checking against the "fully nondeterminstic" adversary.
@@ -132,7 +133,10 @@ endProc :: Proc s
 endProc = liftF End
 
 choose :: [a] -> NondetState s a
-choose as = lift $ as
+choose as = lift $ TN.choose $ as
+
+chooseTagged :: [a] -> NondetState s a
+chooseTagged as = lift $ TN.chooseTagged $ as
 
 output :: Chan a -> a -> NondetState s Action
 output chan val = return $ Just $ Some $ Msg chan val
@@ -187,7 +191,7 @@ findReaction (r:rs) m =
             _ -> findReaction rs m
 
 
-react :: Party -> Some Msg -> [(Party, Action)]
+react :: Party -> Some Msg -> TN.TNondet (Party, Action)
 react (Party s as a b) (Some msg) =
     case (findReaction as msg, msg) of
       (Just (Reaction _ fn), Msg _ m)  -> do

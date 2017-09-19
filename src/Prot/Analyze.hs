@@ -5,7 +5,7 @@
 {-# language UndecidableInstances #-}
 {-# language GADTs #-}
 module Prot.Analyze where
-import Prot.Lang 
+import Prot.Lang
 import qualified Prot.Exec as Exec
 import Data.Parameterized.Some
 import Prot.KVList
@@ -24,7 +24,7 @@ unifAdversaryProc :: [Some Chan] -> [Some Chan] -> Proc ()
 unifAdversaryProc ins outs = 
     forM_ ins 
         (\(Some inc) -> onInput inc $ \_ -> do
-            outm <- choose $ allActions outs
+            outm <- chooseTagged $ allActions outs
             outputMsg outm)
 
 
